@@ -1,0 +1,22 @@
+{
+    "name": "cli",
+    "version": "1.0.0",
+    "private": true,
+    "description": "",
+    "license": "MIT",
+    "main": "index.js",
+    "dependencies": {
+        "commander": "^3.0.0",
+        "image-to-ascii": "^3.0.12",
+        "node-webcam": "^0.5.0",
+        "simple-peer": "^9.5.0",
+        "wrtc": "^0.4.1"
+    },
+    "devDependencies": {
+        "@types/node": "^12.7.2",
+        "@types/simple-peer": "^6.1.6",
+        "@types/webrtc": "^0.0.25",
+        "ts-node": "^8.3.0",
+        "typescript": "^3.5.3"
+    }
+}

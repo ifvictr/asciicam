@@ -1,6 +1,6 @@
 import * as express from 'express'
 import * as io from 'socket.io'
-import { ChatEvent } from './constants'
+import { SocketEvent } from './constants'
 import { ChatMessage } from './types'
 import { createServer, Server } from 'http'
 
@@ -26,20 +26,36 @@ export class ChatServer {
     private listen(): void {
         this.server.listen(this.port, () => {
             console.log('Running server on port %s', this.port)
-        });
+        })
 
-        this.io.on(ChatEvent.CONNECT, (socket: any) => {
+        this.io.on(SocketEvent.CONNECT, (socket: any) => {
             console.log('Connected client on port %s.', this.port)
 
-            socket.on(ChatEvent.MESSAGE, (m: ChatMessage) => {
+            socket.on(SocketEvent.MESSAGE, (m: ChatMessage) => {
                 console.log('[server](message): %s', JSON.stringify(m))
                 this.io.emit('message', m)
-            });
+            })
 
-            socket.on(ChatEvent.DISCONNECT, () => {
+            socket.on(SocketEvent.ROOM_CREATE, () => {
+
+            })
+
+            socket.on(SocketEvent.ROOM_QUERY, () => {
+
+            })
+
+            socket.on(SocketEvent.ROOM_USER_JOIN, () => {
+
+            })
+
+            socket.on(SocketEvent.ROOM_USER_QUIT, () => {
+
+            })
+
+            socket.on(SocketEvent.DISCONNECT, () => {
                 console.log('Client disconnected')
-            });
-        });
+            })
+        })
     }
 
     get app(): express.Application {

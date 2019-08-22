@@ -3,6 +3,7 @@ var program = require('commander');
 const imageToAscii = require('image-to-ascii')
 // import NodeWebcam from "node-webcam"
 const NodeWebcam = require('node-webcam')
+const computeSize = require('compute-size')
 
 program
 	.command('create [passphrase]')
@@ -12,7 +13,7 @@ program
 		console.log(`Room created! Your room ID is <roomId> and the passphrase is ${passphrase}`);
 
 		// Start camera
-        const opts: any = {
+        const camOpts: any = {
             width: 1280,
             height: 720,
             quality: 100,
@@ -25,17 +26,23 @@ program
             // [location, buffer, base64]
             callbackReturn: "buffer",
             verbose: false
-		}
-        const webcam = NodeWebcam.create(opts)
+        }
+        const imgOpts: any = {
+            pixels: ".,:;i1tfLHACK08@",
+            colored: false,
+            //concat: false
+        }
+        const webcam = NodeWebcam.create(camOpts)
         setInterval(() => {
             webcam.capture("test", (err: any, data: any) => {
-                imageToAscii(data, (err: any, convertedImage: any) => {
+                imageToAscii(data, imgOpts, (err: any, convertedImage: any) => {
                     // TODO: Optimize for realtime render
-                    console.log(convertedImage)
+                    // console.log(convertedImage + "\r\x1B[50A")
+                    console.log("\n\n" + convertedImage + "\x1B[0;0H")
+                    //console.log(computeSize(options.size))
                 })
             })
         }, 500)
-
 		});
 
 program

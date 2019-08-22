@@ -6,43 +6,54 @@ import SimpleSignalClient from 'simple-signal-client'
 import io from 'socket.io-client'
 import wrtc from 'wrtc'
 
+const SIGNAL_URL: string = 'http://localhost:8080'
+
 program
     .command('create [passphrase]')
     .alias('c')
     .description('Create a new chat room, optionally locked with the specified passphrase')
     .action((passphrase: string) => {
-        console.log(`Room created! Your room ID is <roomId> and the passphrase is ${passphrase}`)
-
         // 1. Start basic socket for signaling and basic data
-        // TODO: Change IP
-        const socket = io('http://localhost:8080')
+        const socket = io(SIGNAL_URL)
         const signalClient = new SimpleSignalClient(socket)
+        socket.on('room_create_callback', (roomId: string) => {
+            console.log(`room created! your room ID is ${roomId} and the passphrase is ${passphrase}`)
+        })
+
+        // 2. Send request to create room
+        socket.emit('room_create', passphrase)
+
         socket.on('disconnect', () => {
-            console.log('just got disconnected bitch')
+            console.log('you’ve been disconnected')
             process.exit(0)
         })
 
         socket.on('error', (...args) => {
-            console.log('an error occurred')
+            console.log('an error occurred :(')
             console.log(args)
         })
 
-        signalClient.on('discover', async (...args) => {
-            console.log(args)
+        signalClient.on('discover', async (peerIds: string[]) => {
+            console.log('peerIds: ', peerIds)
             // TODO: Get ID to connect to
-            const id = 'something'
-            const { peer } = await signalClient.connect(id)
-            console.log('initiator peer: ', peer)
+            const id = peerIds[0]
+            console.log('my id: ', socket.id)
+            console.log('create id: ', id)
+            try {
+                const { peer } = await signalClient.connect(id, null, { wrtc })
+                console.log('initiator peer: ', peer)
+            } catch (e) {
+                console.log('error: ', e)
+            }
         })
 
         signalClient.on('request', async (request: any) => {
-            const { peer } = await request.accept()
-            console.log('non-initiator peer: ', peer)
-        })
-        // 2. Send request to create room
-        socket.emit('room_create', passphrase)
-        socket.on('room_create_callback', (roomId: string) => {
-            console.log('roomId: ' + roomId)
+            try {
+                const { peer } = await request.accept(null, { wrtc })
+                console.log('non-initiator peer: ', peer)
+            } catch (e) {
+                console.log('error: ', e)
+            }
         })
         // 2. Join created room
 
@@ -66,6 +77,7 @@ program
         }
         const webcam = NodeWebcam.create(camOpts)
         setInterval(() => {
+            return
             webcam.capture('test', (err: any, data: any) => {
                 imageToAscii(data, imgOpts, (err: any, convertedImage: any) => {
                     // TODO: Optimize for realtime render
@@ -83,31 +95,52 @@ program
     .description('Join the specified chat room')
     .action((roomId: string, passphrase: string) => {
         // 1. Emit roomId to main server to see if it exists
-        const socket = io('http://localhost:8080')
-        socket.emit('room_join', { roomId, passphrase })
+        const socket = io(SIGNAL_URL)
+        const signalClient = new SimpleSignalClient(socket)
+        socket.emit('room_join', { roomId, passphrase: passphrase || '' })
+        socket.on('disconnect', () => {
+            console.log('you’ve been disconnected')
+            process.exit(0)
+        })
         socket.on('room_join_callback', (status: string) => {
-            // Statuses: not_found, success, failed
-            console.log('status: ' + status)
-            switch (status) {
-                case 'success':
-                    break
-                case 'failed':
-                    break
-                case 'not_found':
-                    break
-                default:
-                    break
+            // 2. If the attempt fails, notify and exit
+            const statusMessage = ({
+                success: `you’ve joined the room: ${roomId}`,
+                failed: 'incorrect passphrase',
+                not_found: 'room not found'
+            })[status] || 'unknown status received'
+            console.log(statusMessage)
+
+            if (status !== 'success') {
+                socket.disconnect()
             }
-            if (status) {
-                // If it doesn't, notify the user and exit
-            } else {
-                // If it does, attempt to establish a connection to the server
+
+            // Start sending/receiving data
+            signalClient.discover(roomId)
+        })
+
+        signalClient.on('discover', async (peerIds: string[]) => {
+            console.log('peerIds: ', peerIds)
+            // TODO: Get ID to connect to
+            const id = peerIds[0]
+            console.log('my id: ', socket.id)
+            console.log('join id: ', id)
+            try {
+                const { peer } = await signalClient.connect(id, null, { wrtc })
+                console.log('initiator peer: ', peer)
+            } catch (e) {
+                console.log('error: ', e)
             }
         })
 
-        // 2. If the attempt fails, notify and exit
-        // If succeeds, connect and start streaming data
-        console.log(`You’ve joined the room: ${roomId}`)
+        signalClient.on('request', async (request: any) => {
+            try {
+                const { peer } = await request.accept(null, { wrtc })
+                console.log('non-initiator peer: ', peer)
+            } catch (e) {
+                console.log('error: ', e)
+            }
+        })
     })
 
 program.parse(process.argv)

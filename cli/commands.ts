@@ -3,14 +3,13 @@ var program = require('commander');
 const imageToAscii = require('image-to-ascii')
 // import NodeWebcam from "node-webcam"
 const NodeWebcam = require('node-webcam')
-const computeSize = require('compute-size')
 
 program
-	.command('create [passphrase]')
-	.alias("c")
+    .command('create [passphrase]')
+    .alias("c")
     .description("")
-	.action(function(passphrase: string){
-		console.log(`Room created! Your room ID is <roomId> and the passphrase is ${passphrase}`);
+    .action(function (passphrase: string) {
+        console.log(`Room created! Your room ID is <roomId> and the passphrase is ${passphrase}`);
 
 		// Start camera
         const camOpts: any = {
@@ -33,6 +32,7 @@ program
             //concat: false
         }
         const webcam = NodeWebcam.create(camOpts)
+
         setInterval(() => {
             webcam.capture("test", (err: any, data: any) => {
                 imageToAscii(data, imgOpts, (err: any, convertedImage: any) => {
@@ -45,17 +45,18 @@ program
         }, 500)
 		});
 
+
 program
-	.command("join <roomId>", { isDefault: true })
+    .command("join <roomId>", { isDefault: true })
     .alias("j")
     .description("")
     .action((roomId: string) => {
         // Send roomId to main server to see if it exists
 
-         // If it doesn't, notify the user and exit
+        // If it doesn't, notify the user and exit
         // If it does, attempt to establish a connection to the server
 
-         // If the attempt fails, notify and exit
+        // If the attempt fails, notify and exit
         // If succeeds, connect and start streaming data
         console.log("You’ve joined the room: " + roomId)
     })

@@ -30,7 +30,6 @@ program
         const imgOpts: any = {
             pixels: ".,:;i1tfLHACK08@",
             colored: false,
-            //concat: false
         }
         const webcam = NodeWebcam.create(camOpts)
         setInterval(() => {

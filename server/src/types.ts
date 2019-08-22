@@ -1,4 +1,4 @@
-export interface ChatMessage {
-    author: string
-    message: string
+export interface Room {
+    // passphraseHash: string,
+    passphrase: string
 }

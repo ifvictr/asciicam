@@ -1,7 +1,5 @@
-// src/server.ts
-
 import { ChatServer } from './ChatServer'
 
-let app = new ChatServer().app
+const server = new ChatServer().server
 
-export { app }
+export { server }

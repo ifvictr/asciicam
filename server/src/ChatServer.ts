@@ -1,39 +1,31 @@
-import * as express from 'express'
-import * as io from 'socket.io'
+import SimpleSignalServer from 'simple-signal-server'
+import io from 'socket.io'
 import { SocketEvent } from './constants'
 import { ChatMessage } from './types'
-import { createServer, Server } from 'http'
 
 export class ChatServer {
-    public static readonly PORT: number = 8080
-    private _app: express.Application
-    private server: Server
-    private io: io.Server
+    static readonly PORT: number = 8080
+    private _server: io.Server
+    private signalServer: any
     private port: string | number
 
     constructor() {
-        this._app = express()
         this.port = process.env.PORT || ChatServer.PORT
-        this.server = createServer(this._app)
-        this.initSocket()
+        this._server = io()
+        this.signalServer = new SimpleSignalServer(this._server)
         this.listen()
     }
 
-    private initSocket(): void {
-        this.io = io(this.server)
-    }
-
     private listen(): void {
-        this.server.listen(this.port, () => {
-            console.log('Running server on port %s', this.port)
-        })
+        this.server.listen(this.port)
+        console.log('Listening on port ' + this.port)
 
-        this.io.on(SocketEvent.CONNECT, (socket: any) => {
+        this.server.on(SocketEvent.CONNECT, (socket: any) => {
             console.log('Connected client on port %s.', this.port)
 
             socket.on(SocketEvent.MESSAGE, (m: ChatMessage) => {
                 console.log('[server](message): %s', JSON.stringify(m))
-                this.io.emit('message', m)
+                this.server.emit('message', m)
             })
 
             socket.on(SocketEvent.ROOM_CREATE, () => {
@@ -58,7 +50,7 @@ export class ChatServer {
         })
     }
 
-    get app(): express.Application {
-        return this._app
+    get server(): io.Server {
+        return this._server
     }
 }

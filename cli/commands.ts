@@ -3,9 +3,9 @@ var program = require('commander');
 const imageToAscii = require('image-to-ascii')
 // import NodeWebcam from "node-webcam"
 const NodeWebcam = require('node-webcam')
-var Mic = require('node-microphone')
+var Microphone = require('node-microphone')
 var wav = require('wav')
-var fs = require('fs');
+var fs = require('fs')
 
 program
     .command('create [passphrase]')
@@ -32,36 +32,30 @@ program
         const imgOpts: any = {
             pixels: ".,:;i1tfLHACK08@",
             colored: false,
-            //concat: false
+            fg: false
         }
         const webcam = NodeWebcam.create(camOpts)
-        const mic = new Mic()
+        const mic = new Microphone()
+        const buff:Array<number> = []
 
         setInterval(() => {
             webcam.capture("test", (err: any, data: any) => {
                 imageToAscii(data, imgOpts, (err: any, convertedImage: any) => {
                     // TODO: Optimize for realtime render
                     // console.log(convertedImage + "\r\x1B[50A")
-                    //console.log("\n\n" + convertedImage + "\x1B[0;0H")
+                    console.log( convertedImage + "\x1B[0;0H")
                 })
             })
         }, 500)
+        //console.log("\x1B[60B")
 
-
-        
         let micStream = mic.startRecording();
         //saving to a local .wav file for now, we can sort actual wrtie stream later
         micStream.pipe( fs.createWriteStream('./testaudio.wav') );
         setTimeout(() => {
             console.log('stopped recording audio');
             mic.stopRecording();
-        }, 3000);
-        // mic.on('info', (info) => {
-        //     console.log(info);
-        // });
-        // mic.on('error', (error) => {
-        //     console.log(error);
-        // });
+        }, 10000);
         
 		});
 

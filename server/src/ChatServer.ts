@@ -16,10 +16,9 @@ export class ChatServer {
         this._server = io()
         this.signalServer = new SimpleSignalServer(this._server)
         this.rooms = new Map()
-        this.listen()
     }
 
-    private listen(): void {
+    listen(): void {
         this.server.listen(this.port)
         console.log(`[server](message): listening on port ${this.port}`)
 
@@ -45,10 +44,10 @@ export class ChatServer {
                 let status: string
                 console.log('this.rooms: ', this.rooms)
                 console.log('request.roomId: ', request.roomId)
-                if (this.rooms.has(request.roomId)) {
+                const room = this.rooms.get(request.roomId)
+                if (room != null) {
                     // Requested room exists
-                    const roomData: Room = this.rooms.get(request.roomId)
-                    status = request.passphrase === roomData.passphrase ? 'success' : 'failed'
+                    status = request.passphrase === room.passphrase ? 'success' : 'failed'
                 } else {
                     status = 'not_found'
                 }
@@ -68,7 +67,7 @@ export class ChatServer {
             })
 
             this.signalServer.on(SocketEvent.SIGNAL_DISCOVER, (request: any) => {
-                console.log(`[socket ${socket.id}]: discovering peers`)
+                console.log(`[socket ${request.socket.id}]: discovering peers`)
                 // Looks for other clients in the specified room and returns their IDs
                 const clientId: string = request.socket.id
                 const peers = this.server.sockets.adapter.rooms[request.discoveryData].sockets
@@ -81,10 +80,10 @@ export class ChatServer {
                 console.log(`[socket ${socket.id}]: disconnected (signal)`)
             })
 
-            this.signalServer.on(SocketEvent.SIGNAL_REQUEST, (request: any) => {
-                console.log(`[socket ${socket.id}]: requested`)
-                request.forward()
-            })
+            // this.signalServer.on(SocketEvent.SIGNAL_REQUEST, (request: any) => {
+            //     console.log(`[socket ${socket.id}]: requested`)
+            //     request.forward()
+            // })
         })
     }
 

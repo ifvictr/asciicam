@@ -1,5 +1,4 @@
 import { ChatServer } from './ChatServer'
 
-const server = new ChatServer().server
-
-export { server }
+const server = new ChatServer()
+server.listen()

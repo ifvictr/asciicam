@@ -42,12 +42,17 @@ export class ChatServer {
             socket.on(SocketEvent.ROOM_JOIN, (request: any) => {
                 console.log(`[server]: room join request received, id: ${request.roomId}, passphrase: “${request.passphrase}”`)
                 let status: string
-                console.log('this.rooms: ', this.rooms)
+                console.log('this.rsooms: ', this.rooms)
                 console.log('request.roomId: ', request.roomId)
                 const room = this.rooms.get(request.roomId)
                 if (room != null) {
                     // Requested room exists
-                    status = request.passphrase === room.passphrase ? 'success' : 'failed'
+                    if (request.passphrase === room.passphrase) {
+                        status = 'success'
+                        socket.join(request.roomId)
+                    } else {
+                        status = 'failed'
+                    }
                 } else {
                     status = 'not_found'
                 }
@@ -60,6 +65,12 @@ export class ChatServer {
 
             socket.on(SocketEvent.ROOM_USER_QUIT, () => {
 
+            })
+
+            socket.on(SocketEvent.ROOM_VIDEO_UPDATE, ({ roomId, data }) => {
+                // Broadcast image to everyone else in that room
+                console.log(`room_video_update. roomId: ${roomId}`)
+                socket.to(roomId).emit(SocketEvent.ROOM_VIDEO_UPDATE, data)
             })
 
             socket.on(SocketEvent.DISCONNECT, (socket: any) => {

@@ -8,6 +8,7 @@ export enum SocketEvent {
     ROOM_JOIN_CALLBACK = 'room_join_callback',
     ROOM_USER_JOIN = 'room_user_join',
     ROOM_USER_QUIT = 'room_user_quit',
+    ROOM_VIDEO_UPDATE = 'room_video_update',
     SIGNAL_DISCOVER = 'discover',
     SIGNAL_REQUEST = 'request'
 }

@@ -4,6 +4,7 @@ import NodeWebcam from 'node-webcam'
 import Peer from 'simple-peer'
 import SimpleSignalClient from 'simple-signal-client'
 import io from 'socket.io-client'
+import terminalImage from 'terminal-image'
 import wrtc from 'wrtc'
 
 const SIGNAL_URL: string = 'http://localhost:8080'
@@ -98,13 +99,20 @@ function commandCreateRoom(passphrase: string) {
     setInterval(() => {
         // return
         webcam.capture('test', (err: any, data: any) => {
+            // TODO: Check quality flag
+            // Basic quality
             imageToAscii(data, imgOpts, (err: any, convertedImage: any) => {
                 // TODO: Optimize for realtime render
                 // socket.emit('message', convertedImage)
                 console.log(convertedImage + '\x1B[0;0H')
             })
+
+            // High quality
+            // terminalImage.buffer(data).then((convertedImage: any) => {
+            //     console.log(convertedImage + '\x1B[0;0H')
+            // })
         })
-    }, 1000)
+    }, 250)
 }
 
 function commandJoinRoom(roomId: string, passphrase: string) {

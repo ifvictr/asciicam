@@ -59,31 +59,31 @@ function commandCreateRoom(passphrase: string, opts: any) {
         console.log(image + '\x1B[0;0H')
     })
 
-    signalClient.on('discover', async (peerIds: string[]) => {
-        console.log('peerIds: ', peerIds)
-        // TODO: Get ID to connect to
-        const id = peerIds[0]
-        console.log('signalClient id: ', signalClient.id)
-        console.log('my id: ', socket.id)
-        console.log('create id: ', id)
-        try {
-            console.log('attempt to connect')
-            const { peer } = await signalClient.connect(id, null, { wrtc })
-            console.log('initiator peer: ', peer)
-        } catch (e) {
-            console.log('error: ', e)
-        }
-    })
+    // signalClient.on('discover', async (peerIds: string[]) => {
+    //     console.log('peerIds: ', peerIds)
+    //     // TODO: Get ID to connect to
+    //     const id = peerIds[0]
+    //     console.log('signalClient id: ', signalClient.id)
+    //     console.log('my id: ', socket.id)
+    //     console.log('create id: ', id)
+    //     try {
+    //         console.log('attempt to connect')
+    //         const { peer } = await signalClient.connect(id, null, { wrtc })
+    //         console.log('initiator peer: ', peer)
+    //     } catch (e) {
+    //         console.log('error: ', e)
+    //     }
+    // })
 
-    signalClient.on('request', async (request: any) => {
-        try {
-            console.log('attempt to accept')
-            const { peer } = await request.accept(null, { wrtc })
-            console.log('non-initiator peer: ', peer)
-        } catch (e) {
-            console.log('error: ', e)
-        }
-    })
+    // signalClient.on('request', async (request: any) => {
+    //     try {
+    //         console.log('attempt to accept')
+    //         const { peer } = await request.accept(null, { wrtc })
+    //         console.log('non-initiator peer: ', peer)
+    //     } catch (e) {
+    //         console.log('error: ', e)
+    //     }
+    // })
 
     // 3. Start mic and send audio data
 
@@ -110,7 +110,7 @@ function commandCreateRoom(passphrase: string, opts: any) {
             // Basic quality
             imageToAscii(data, imgOpts, (err: any, convertedImage: any) => {
                 // TODO: Optimize for realtime render
-                console.log('storedRoomId: ', storedRoomId)
+                // console.log('storedRoomId: ', storedRoomId)
                 socket.emit('room_video_update', { roomId: storedRoomId, data: convertedImage })
                 // console.log(convertedImage + '\x1B[0;0H')
             })
@@ -125,7 +125,6 @@ function commandCreateRoom(passphrase: string, opts: any) {
 
 function commandJoinRoom(roomId: string, passphrase: string, opts: any) {
     // 1. Emit roomId to main server to see if it exists
-    console.log(opts.server)
     const socket = io(opts.server || SIGNAL_URL)
     const signalClient = new SimpleSignalClient(socket)
     socket.emit('room_join', { roomId, passphrase: passphrase || '' })
@@ -154,31 +153,31 @@ function commandJoinRoom(roomId: string, passphrase: string, opts: any) {
         console.log(image + '\x1B[0;0H')
     })
 
-    signalClient.on('discover', async (peerIds: string[]) => {
-        console.log('peerIds: ', peerIds)
-        // TODO: Get ID to connect to
-        const id = peerIds[0]
-        console.log('signalClient id: ', signalClient.id)
-        console.log('my id: ', socket.id)
-        console.log('join id: ', id)
-        try {
-            console.log('attempt to connect')
-            const { peer } = await signalClient.connect(id, null, { wrtc })
-            console.log('initiator peer: ', peer)
-        } catch (e) {
-            console.log('error: ', e)
-        }
-    })
+    // signalClient.on('discover', async (peerIds: string[]) => {
+    //     console.log('peerIds: ', peerIds)
+    //     // TODO: Get ID to connect to
+    //     const id = peerIds[0]
+    //     console.log('signalClient id: ', signalClient.id)
+    //     console.log('my id: ', socket.id)
+    //     console.log('join id: ', id)
+    //     try {
+    //         console.log('attempt to connect')
+    //         const { peer } = await signalClient.connect(id, null, { wrtc })
+    //         console.log('initiator peer: ', peer)
+    //     } catch (e) {
+    //         console.log('error: ', e)
+    //     }
+    // })
 
-    signalClient.on('request', async (request: any) => {
-        try {
-            console.log('attempt to accept')
-            const { peer } = await request.accept(null, { wrtc })
-            console.log('non-initiator peer: ', peer)
-        } catch (e) {
-            console.log('error: ', e)
-        }
-    })
+    // signalClient.on('request', async (request: any) => {
+    //     try {
+    //         console.log('attempt to accept')
+    //         const { peer } = await request.accept(null, { wrtc })
+    //         console.log('non-initiator peer: ', peer)
+    //     } catch (e) {
+    //         console.log('error: ', e)
+    //     }
+    // })
 
     const camOpts: any = {
         width: 1280,
@@ -202,7 +201,7 @@ function commandJoinRoom(roomId: string, passphrase: string, opts: any) {
             // Basic quality
             imageToAscii(data, imgOpts, (err: any, convertedImage: any) => {
                 // TODO: Optimize for realtime render
-                console.log('roomId: ', roomId)
+                // console.log('roomId: ', roomId)
                 socket.emit('room_video_update', { roomId, data: convertedImage })
                 // console.log(convertedImage + '\x1B[0;0H')
             })

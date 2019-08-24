@@ -12,7 +12,7 @@ const SIGNAL_URL: string = 'http://localhost:8080'
 program
     .command('create [passphrase]')
     .alias('c')
-    .option('-s, --server', '')
+    .option('-s, --server <address>', '')
     .description('Create a new chat room, optionally locked with the specified passphrase')
     .action(commandCreateRoom)
 
@@ -20,7 +20,7 @@ program
 program
     .command('join <roomId> [passphrase]')
     .alias('j')
-    .option('-s, --server', '')
+    .option('-s, --server <address>', '')
     .description('Join the specified chat room')
     .action(commandJoinRoom)
 
@@ -125,6 +125,7 @@ function commandCreateRoom(passphrase: string, opts: any) {
 
 function commandJoinRoom(roomId: string, passphrase: string, opts: any) {
     // 1. Emit roomId to main server to see if it exists
+    console.log(opts.server)
     const socket = io(opts.server || SIGNAL_URL)
     const signalClient = new SimpleSignalClient(socket)
     socket.emit('room_join', { roomId, passphrase: passphrase || '' })

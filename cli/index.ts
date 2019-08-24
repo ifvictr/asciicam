@@ -12,6 +12,7 @@ const SIGNAL_URL: string = 'http://localhost:8080'
 program
     .command('create [passphrase]')
     .alias('c')
+    .option('-s, --server', '')
     .description('Create a new chat room, optionally locked with the specified passphrase')
     .action(commandCreateRoom)
 
@@ -19,6 +20,7 @@ program
 program
     .command('join <roomId> [passphrase]')
     .alias('j')
+    .option('-s, --server', '')
     .description('Join the specified chat room')
     .action(commandJoinRoom)
 
@@ -27,14 +29,16 @@ program.parse(process.argv)
 /**
  * Starts the signalling server, listens for connections.
  */
-function commandCreateRoom(passphrase: string) {
+function commandCreateRoom(passphrase: string, opts: any) {
     // 1. Start basic socket for signaling and basic data
-    const socket = io(SIGNAL_URL)
+    const socket = io(opts.server || SIGNAL_URL)
     const signalClient = new SimpleSignalClient(socket)
+    let storedRoomId
     socket.on('room_create_callback', (roomId: string) => {
         console.log(`room created! your room ID is ${roomId} and the passphrase is ${passphrase}`)
         // 2. Join created room
         // We know the room exists, now add them
+        storedRoomId = roomId
         socket.emit('room_join', { roomId, passphrase: passphrase || '' })
     })
 
@@ -49,6 +53,10 @@ function commandCreateRoom(passphrase: string) {
     socket.on('error', (...args) => {
         console.log('an error occurred :(')
         console.log(args)
+    })
+
+    socket.on('room_video_update', image => {
+        console.log(image + '\x1B[0;0H')
     })
 
     signalClient.on('discover', async (peerIds: string[]) => {
@@ -97,14 +105,14 @@ function commandCreateRoom(passphrase: string) {
     }
     const webcam = NodeWebcam.create(camOpts)
     setInterval(() => {
-        // return
         webcam.capture('test', (err: any, data: any) => {
             // TODO: Check quality flag
             // Basic quality
             imageToAscii(data, imgOpts, (err: any, convertedImage: any) => {
                 // TODO: Optimize for realtime render
-                // socket.emit('message', convertedImage)
-                console.log(convertedImage + '\x1B[0;0H')
+                console.log('storedRoomId: ', storedRoomId)
+                socket.emit('room_video_update', { roomId: storedRoomId, data: convertedImage })
+                // console.log(convertedImage + '\x1B[0;0H')
             })
 
             // High quality
@@ -115,9 +123,9 @@ function commandCreateRoom(passphrase: string) {
     }, 250)
 }
 
-function commandJoinRoom(roomId: string, passphrase: string) {
+function commandJoinRoom(roomId: string, passphrase: string, opts: any) {
     // 1. Emit roomId to main server to see if it exists
-    const socket = io(SIGNAL_URL)
+    const socket = io(opts.server || SIGNAL_URL)
     const signalClient = new SimpleSignalClient(socket)
     socket.emit('room_join', { roomId, passphrase: passphrase || '' })
     socket.on('disconnect', () => {
@@ -138,7 +146,11 @@ function commandJoinRoom(roomId: string, passphrase: string) {
         }
 
         // Start sending/receiving data
-        signalClient.discover(roomId)
+        // signalClient.discover(roomId)
+    })
+
+    socket.on('room_video_update', image => {
+        console.log(image + '\x1B[0;0H')
     })
 
     signalClient.on('discover', async (peerIds: string[]) => {
@@ -166,4 +178,38 @@ function commandJoinRoom(roomId: string, passphrase: string) {
             console.log('error: ', e)
         }
     })
+
+    const camOpts: any = {
+        width: 1280,
+        height: 720,
+        quality: 100,
+        delay: 0,
+        saveShots: false,
+        output: 'jpeg',
+        device: false,
+        callbackReturn: 'buffer',
+        verbose: false
+    }
+    const imgOpts: any = {
+        pixels: '.,:;i1tfLHACKLODGE08@',
+        // colored: false
+    }
+    const webcam = NodeWebcam.create(camOpts)
+    setInterval(() => {
+        webcam.capture('test1', (err: any, data: any) => {
+            // TODO: Check quality flag
+            // Basic quality
+            imageToAscii(data, imgOpts, (err: any, convertedImage: any) => {
+                // TODO: Optimize for realtime render
+                console.log('roomId: ', roomId)
+                socket.emit('room_video_update', { roomId, data: convertedImage })
+                // console.log(convertedImage + '\x1B[0;0H')
+            })
+
+            // High quality
+            // terminalImage.buffer(data).then((convertedImage: any) => {
+            //     console.log(convertedImage + '\x1B[0;0H')
+            // })
+        })
+    }, 250)
 }

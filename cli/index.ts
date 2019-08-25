@@ -39,6 +39,13 @@ function commandCreateRoom(passphrase: string, opts: any) {
     socket.on('room_create_callback', (roomId: string) => {
         console.log(`room created! your room ID is ${roomId} and the passphrase is ${passphrase}`)
 
+    //     console.log('                 _ _                       
+    //     __ _ ___  ___(_|_)   ___ __ _ _ __ ___  
+    //    / _` / __|/ __| | |  / __/ _` | '_ ` _ \ 
+    //   | (_| \__ \ (__| | | | (_| (_| | | | | | |
+    //    \__,_|___/\___|_|_|  \___\__,_|_| |_| |_|
+    //                                             ')
+
         // 2. Join created room
         // We know the room exists, now add them
         storedRoomId = roomId
@@ -131,7 +138,8 @@ function commandCreateRoom(passphrase: string, opts: any) {
             // Basic quality
             imageToAscii(data, imgOpts, (err: any, convertedImage: any) => {
                 // TODO: Optimize for realtime render
-                console.log('storedRoomId: ', storedRoomId)                
+                //console.log('storedRoomId: ', storedRoomId)              
+                socket.emit('room_video_update', { roomId: storedRoomId, data: convertedImage })
                 console.log(convertedImage + '\x1B[0;0H')
             })
         })

@@ -13,9 +13,10 @@ program
     .command('create [passphrase]')
     .alias('c')
     .option('-s, --server <address>', '')
+    .option('-h, --hacker', 'colorless')
+    .option('-t, --text', '(not) custom text')
     .description('Create a new chat room, optionally locked with the specified passphrase')
     .action(commandCreateRoom)
-
 
 program
     .command('join <roomId> [passphrase]')
@@ -25,6 +26,7 @@ program
     .action(commandJoinRoom)
 
 program.parse(process.argv)
+
 
 /**
  * Starts the signalling server, listens for connections.
@@ -36,6 +38,7 @@ function commandCreateRoom(passphrase: string, opts: any) {
     let storedRoomId
     socket.on('room_create_callback', (roomId: string) => {
         console.log(`room created! your room ID is ${roomId} and the passphrase is ${passphrase}`)
+
         // 2. Join created room
         // We know the room exists, now add them
         storedRoomId = roomId
@@ -86,6 +89,27 @@ function commandCreateRoom(passphrase: string, opts: any) {
     })
 
     // 3. Start mic and send audio data
+    let imgOpts: any = {}
+    //let hasColor:boolean = true
+    
+    if (opts.hacker) {
+        imgOpts = {
+            pixels: '.,:;i1tfHA08@',
+            colored: false
+        }
+    }
+
+    if (opts.text) {
+        imgOpts = {
+            pixels: 'HACKLODGE',
+            colored: true,
+            bg: true,
+            fg: false,
+           // px_background: (255, 255, 255)
+            stringify: false,
+            //concat: false
+        }
+    }
 
     // 4. Start camera and send video data
     const camOpts: any = {
@@ -99,10 +123,7 @@ function commandCreateRoom(passphrase: string, opts: any) {
         callbackReturn: 'buffer',
         verbose: false
     }
-    const imgOpts: any = {
-        pixels: '.,:;i1tfLHACKLODGE08@',
-        // colored: false
-    }
+ 
     const webcam = NodeWebcam.create(camOpts)
     setInterval(() => {
         webcam.capture('test', (err: any, data: any) => {
@@ -110,17 +131,12 @@ function commandCreateRoom(passphrase: string, opts: any) {
             // Basic quality
             imageToAscii(data, imgOpts, (err: any, convertedImage: any) => {
                 // TODO: Optimize for realtime render
-                console.log('storedRoomId: ', storedRoomId)
-                socket.emit('room_video_update', { roomId: storedRoomId, data: convertedImage })
-                // console.log(convertedImage + '\x1B[0;0H')
+                console.log('storedRoomId: ', storedRoomId)                
+                console.log(convertedImage + '\x1B[0;0H')
             })
-
-            // High quality
-            // terminalImage.buffer(data).then((convertedImage: any) => {
-            //     console.log(convertedImage + '\x1B[0;0H')
-            // })
         })
-    }, 250)
+    }, 250) //,                 console.log('\x1B[2J')
+
 }
 
 function commandJoinRoom(roomId: string, passphrase: string, opts: any) {

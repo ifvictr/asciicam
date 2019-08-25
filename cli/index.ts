@@ -1,9 +1,13 @@
+import speaker from 'audio-speaker/stream'
 import program from 'commander'
 import imageToAscii from 'image-to-ascii'
+import Mic from 'mic'
+// import Mic from 'node-microphone'
 import NodeWebcam from 'node-webcam'
 import Peer from 'simple-peer'
 import SimpleSignalClient from 'simple-signal-client'
 import io from 'socket.io-client'
+import ss from 'socket.io-stream'
 import terminalImage from 'terminal-image'
 import wrtc from 'wrtc'
 
@@ -33,6 +37,25 @@ function commandCreateRoom(passphrase: string, opts: any) {
     // 1. Start basic socket for signaling and basic data
     const socket = io(opts.server || SIGNAL_URL)
     const signalClient = new SimpleSignalClient(socket)
+    // const mic = new Mic()
+    // const micStream = mic.startRecording()
+    var micInstance = Mic({
+        rate: '16000',
+        channels: '1',
+        debug: true,
+        exitOnSilence: 6
+    });
+    var micStream = micInstance.getAudioStream();
+    const socketStream = ss.createStream()
+
+    // Stream audio to server
+    micStream.pipe(socketStream)
+    micStream.on('data', data => {
+        console.log(data)
+    })
+    // Stream audio from server
+    socketStream.pipe(speaker())
+
     let storedRoomId
     socket.on('room_create_callback', (roomId: string) => {
         console.log(`room created! your room ID is ${roomId} and the passphrase is ${passphrase}`)
@@ -40,6 +63,8 @@ function commandCreateRoom(passphrase: string, opts: any) {
         // We know the room exists, now add them
         storedRoomId = roomId
         socket.emit('room_join', { roomId, passphrase: passphrase || '' })
+        // Stream audio from server
+        ss(socket).emit('room_audio_update', socketStream, { roomId: storedRoomId })
     })
 
     // 2. Send request to create room
@@ -127,6 +152,24 @@ function commandJoinRoom(roomId: string, passphrase: string, opts: any) {
     // 1. Emit roomId to main server to see if it exists
     const socket = io(opts.server || SIGNAL_URL)
     const signalClient = new SimpleSignalClient(socket)
+    // const mic = new Mic()
+    // const micStream = mic.startRecording()
+    var micInstance = Mic({
+        rate: '16000',
+        channels: '1',
+        debug: true,
+        exitOnSilence: 6
+    });
+    var micStream = micInstance.getAudioStream();
+    const socketStream = ss.createStream()
+
+    // Stream audio to server
+    micStream.pipe(socketStream)
+    micStream.on('data', data => {
+        console.log(data)
+    })
+    // Stream audio from server
+    socketStream.pipe(speaker())
     socket.emit('room_join', { roomId, passphrase: passphrase || '' })
     socket.on('disconnect', () => {
         console.log('you’ve been disconnected')
@@ -147,6 +190,7 @@ function commandJoinRoom(roomId: string, passphrase: string, opts: any) {
 
         // Start sending/receiving data
         // signalClient.discover(roomId)
+        ss(socket).emit('room_audio_update', socketStream, { roomId })
     })
 
     socket.on('room_video_update', image => {

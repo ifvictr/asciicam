@@ -39,9 +39,9 @@ function commandCreateRoom(passphrase: string, opts: any) {
     socket.on('room_create_callback', (roomId: string) => {
         console.log(`room created! your room ID is ${roomId} and the passphrase is ${passphrase}`)
 
-        console.log(`                 _ _                       
-        __ _ ___  ___(_|_)   ___ __ _ _ __ ___  
-       / _\` / __|/ __| | |  / __/ _\` | \'_ \` _ \ 
+        console.log(`                 _ _
+        __ _ ___  ___(_|_)   ___ __ _ _ __ ___
+       / _\` / __|/ __| | |  / __/ _\` | \'_ \` _ \
       | (_| \__ \ (__| | | | (_| (_| | | | | | |
        \__,_|___/\___|_|_|  \___\__,_|_| |_| |_|
                                                 `)
@@ -98,7 +98,7 @@ function commandCreateRoom(passphrase: string, opts: any) {
     // 3. Start mic and send audio data
     let imgOpts: any = {}
     //let hasColor:boolean = true
-    
+
     if (opts.hacker) {
         imgOpts = {
             pixels: '.,:;i1tfHA08@',
@@ -112,7 +112,7 @@ function commandCreateRoom(passphrase: string, opts: any) {
             colored: true,
             bg: true,
             fg: false,
-           // px_background: (255, 255, 255)
+            // px_background: (255, 255, 255)
             stringify: false,
             //concat: false
         }
@@ -130,7 +130,7 @@ function commandCreateRoom(passphrase: string, opts: any) {
         callbackReturn: 'buffer',
         verbose: false
     }
- 
+
     const webcam = NodeWebcam.create(camOpts)
     setInterval(() => {
         webcam.capture('test', (err: any, data: any) => {
@@ -138,9 +138,9 @@ function commandCreateRoom(passphrase: string, opts: any) {
             // Basic quality
             imageToAscii(data, imgOpts, (err: any, convertedImage: any) => {
                 // TODO: Optimize for realtime render
-                //console.log('storedRoomId: ', storedRoomId)              
+                //console.log('storedRoomId: ', storedRoomId)
                 socket.emit('room_video_update', { roomId: storedRoomId, data: convertedImage })
-                console.log(convertedImage + '\x1B[0;0H')
+                // console.log(convertedImage + '\x1B[0;0H')
             })
         })
     }, 250) //,                 console.log('\x1B[2J')
@@ -149,7 +149,6 @@ function commandCreateRoom(passphrase: string, opts: any) {
 
 function commandJoinRoom(roomId: string, passphrase: string, opts: any) {
     // 1. Emit roomId to main server to see if it exists
-    console.log(opts.server)
     const socket = io(opts.server || SIGNAL_URL)
     const signalClient = new SimpleSignalClient(socket)
     socket.emit('room_join', { roomId, passphrase: passphrase || '' })
@@ -226,7 +225,7 @@ function commandJoinRoom(roomId: string, passphrase: string, opts: any) {
             // Basic quality
             imageToAscii(data, imgOpts, (err: any, convertedImage: any) => {
                 // TODO: Optimize for realtime render
-                console.log('roomId: ', roomId)
+                // console.log('roomId: ', roomId)
                 socket.emit('room_video_update', { roomId, data: convertedImage })
                 // console.log(convertedImage + '\x1B[0;0H')
             })

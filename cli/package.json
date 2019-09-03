@@ -1,8 +1,8 @@
 {
-  "name": "cli",
+  "name": "@asciicam/cli",
   "version": "1.0.0",
   "private": true,
-  "description": "",
+  "description": "CLI client for asciicam",
   "license": "MIT",
   "main": "index.js",
   "dependencies": {

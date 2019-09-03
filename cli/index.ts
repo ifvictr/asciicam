@@ -6,8 +6,13 @@ import SimpleSignalClient from 'simple-signal-client'
 import io from 'socket.io-client'
 import terminalImage from 'terminal-image'
 import wrtc from 'wrtc'
+import pkg from './package.json'
 
 const SIGNAL_URL: string = 'http://localhost:8080'
+
+program
+    .version(pkg.version)
+    .description(pkg.description)
 
 program
     .command('create [passphrase]')

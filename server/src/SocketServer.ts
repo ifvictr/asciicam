@@ -1,4 +1,4 @@
-import shortid from 'shortid'
+import randomatic from 'randomatic'
 import SimpleSignalServer from 'simple-signal-server'
 import io from 'socket.io'
 import { SocketEvent } from './constants'
@@ -31,7 +31,7 @@ export default class SocketServer {
             })
 
             socket.on(SocketEvent.ROOM_CREATE, (passphrase: string) => {
-                const roomId: string = shortid.generate()
+                const roomId: string = randomatic('A0', 8)
                 this.rooms.set(roomId, { passphrase })
                 socket.join(roomId)
                 socket.emit(SocketEvent.ROOM_CREATE_CALLBACK, roomId)

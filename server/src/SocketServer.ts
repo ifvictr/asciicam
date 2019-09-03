@@ -4,7 +4,7 @@ import io from 'socket.io'
 import { SocketEvent } from './constants'
 import { Room } from './types'
 
-export class ChatServer {
+export default class SocketServer {
     static readonly PORT: number = 8080
     private _server: io.Server
     private signalServer: any
@@ -12,7 +12,7 @@ export class ChatServer {
     private rooms: Map<string, Room>
 
     constructor() {
-        this.port = process.env.PORT || ChatServer.PORT
+        this.port = process.env.PORT || SocketServer.PORT
         this._server = io()
         this.signalServer = new SimpleSignalServer(this._server)
         this.rooms = new Map()
